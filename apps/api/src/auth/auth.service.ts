@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
@@ -15,6 +16,7 @@ import type {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   private users: User[] = [];
   private idCounter = 2;
 
@@ -29,8 +31,10 @@ export class AuthService {
   }
 
   async signup(dto: SignupDto): Promise<AuthResponse> {
+    this.logger.log(`Attempting signup for username: ${dto.username}`);
     const existingUser = this.users.find((u) => u.username === dto.username);
     if (existingUser) {
+      this.logger.warn(`Signup failed: Username '${dto.username}' already taken`);
       throw new ConflictException('Username already taken');
     }
 
@@ -44,6 +48,7 @@ export class AuthService {
     };
 
     this.users.push(newUser);
+    this.logger.log(`Successfully created new user: ${newUser.username} (ID: ${newUser.id})`);
 
     const payload: JwtPayload = { sub: newUser.id, username: newUser.username };
     return {
@@ -52,16 +57,20 @@ export class AuthService {
   }
 
   async login(dto: LoginDto): Promise<AuthResponse> {
+    this.logger.log(`Attempting login for username: ${dto.username}`);
     const user = this.users.find((u) => u.username === dto.username);
     if (!user) {
+      this.logger.warn(`Login failed: Username '${dto.username}' not found`);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
     if (!isMatch) {
+      this.logger.warn(`Login failed: Incorrect password for username '${dto.username}'`);
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    this.logger.log(`User '${user.username}' successfully logged in`);
     const payload: JwtPayload = { sub: user.id, username: user.username };
     return {
       access_token: this.jwtService.sign(payload),
