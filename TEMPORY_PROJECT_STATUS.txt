@@ -1,0 +1,380 @@
+TASK FLOW MONOREPO - TEMPORY PROJECT STATUS
+Generated: 2026-04-24
+
+============================================================
+1) WHAT WAS DONE (END-TO-END)
+============================================================
+
+A) Shadcn/UI setup in frontend (apps/web)
+- Initialized shadcn in the web app.
+- Configured style/color choices to match requested setup:
+  - style: new-york
+  - baseColor: zinc
+  - cssVariables: true
+- Added UI components:
+  - button
+  - input
+  - card
+  - badge
+- Ensured generated component files exist in src/components/ui.
+
+B) Shared package wiring
+- Added shared workspace dependency to both apps:
+  - @task-flow/types: workspace:*
+- Updated:
+  - apps/web/package.json
+  - apps/api/package.json
+
+C) Workspace dependency sync
+- Ran pnpm install from root.
+
+D) TypeScript/deprecation and config cleanup
+- Removed deprecated baseUrl usage to avoid TS 6 deprecation issues.
+- Fixed web alias mapping for build-time TypeScript resolution by moving paths into tsconfig.app.json.
+- Removed invalid API tsconfig ignoreDeprecations value that was breaking build.
+
+E) Lint and code fixes
+- API:
+  - Avoided floating promise in main bootstrap call.
+  - Tightened e2e typing around supertest call sites to satisfy lint.
+- Web:
+  - Adjusted react-refresh lint rule to allow shadcn variant constant exports.
+
+F) Git/repo hygiene
+- Created root-level files:
+  - .gitignore
+  - .gitattributes
+  - .editorconfig
+- Removed redundant frontend-level ignore file:
+  - apps/web/.gitignore (removed)
+
+G) Monorepo script optimization (root package.json)
+- Fixed broken script mapping for API dev command.
+- Added/optimized root scripts for day-to-day workflow:
+  - dev:api
+  - dev:web
+  - dev (parallel + stream)
+  - build (recursive)
+  - lint (recursive)
+
+H) Verification performed
+- Build:
+  - api build passed
+  - web build passed
+- Lint:
+  - workspace lint passed
+- Runtime checks:
+  - backend reachable at localhost:3000 (Hello World)
+  - frontend reachable at localhost:5174 (HTTP 200)
+
+
+============================================================
+2) CURRENT STRUCTURE (TOP LEVEL)
+============================================================
+
+task-flow/
+|- .editorconfig
+|- .gitattributes
+|- .gitignore
+|- .vscode/
+|- apps/
+|  |- api/
+|  |  |- src/
+|  |  |- test/
+|  |  |- package.json
+|  |  |- tsconfig.json
+|  |  |- tsconfig.build.json
+|  |  |- eslint.config.mjs
+|  |  |- nest-cli.json
+|  |  |- README.md
+|  |
+|  |- web/
+|     |- src/
+|     |  |- components/
+|     |     |- ui/
+|     |        |- badge.tsx
+|     |        |- button.tsx
+|     |        |- card.tsx
+|     |        |- input.tsx
+|     |- public/
+|     |- components.json
+|     |- package.json
+|     |- tsconfig.app.json
+|     |- tsconfig.json
+|     |- tsconfig.node.json
+|     |- vite.config.ts
+|     |- eslint.config.js
+|     |- README.md
+|
+|- packages/
+|  |- types/
+|     |- index.ts
+|     |- package.json
+|
+|- package.json
+|- pnpm-workspace.yaml
+|- pnpm-lock.yaml
+|- README.md
+
+
+============================================================
+3) HOW IT WORKS (DEV FLOW)
+============================================================
+
+Workspace model:
+- pnpm workspace with 3 projects:
+  - apps/api (NestJS backend)
+  - apps/web (React + Vite frontend)
+  - packages/types (shared local package)
+
+Dependency linking:
+- Both apps depend on @task-flow/types as workspace:*.
+- pnpm links local package automatically.
+
+Root scripts:
+- pnpm dev:api
+  Starts Nest backend in watch mode.
+- pnpm dev:web
+  Starts Vite frontend dev server.
+- pnpm dev
+  Starts both in parallel with live streaming logs.
+- pnpm build
+  Builds all workspace packages/apps recursively.
+- pnpm lint
+  Runs lint recursively across workspace.
+
+Backend runtime:
+- Entry: apps/api/src/main.ts
+- Default port: 3000 unless PORT env var set.
+
+Frontend runtime:
+- Entry: apps/web via Vite.
+- Typical dev port: 5173; can auto-shift (e.g., 5174) if busy.
+
+
+============================================================
+4) IMPORTANT NOTES
+============================================================
+
+- If port 3000 is already in use, backend dev start will fail with EADDRINUSE.
+  This is an environment/runtime conflict, not a build/lint issue.
+- Web alias imports use @/* and are configured in apps/web/tsconfig.app.json.
+- Shadcn components and config are already integrated.
+
+
+============================================================
+5) QUICK COMMANDS
+============================================================
+
+From repo root:
+
+- Install deps
+  pnpm install
+
+- Run both apps
+  pnpm dev
+
+- Run only backend
+  pnpm dev:api
+
+- Run only frontend
+  pnpm dev:web
+
+- Lint all
+  pnpm lint
+
+- Build all
+  pnpm build
+
+
+============================================================
+6) FILES MODIFIED/CREATED DURING SETUP (SUMMARY)
+============================================================
+
+Created:
+- .gitignore
+- .gitattributes
+- .editorconfig
+- TEMPORY_PROJECT_STATUS.txt
+
+Updated:
+- package.json (root scripts)
+- apps/api/package.json
+- apps/api/tsconfig.json
+- apps/api/src/main.ts
+- apps/api/test/app.e2e-spec.ts
+- apps/web/package.json
+- apps/web/components.json
+- apps/web/eslint.config.js
+- apps/web/tsconfig.app.json
+- apps/web/tsconfig.json
+- apps/web/src/components/ui/button.tsx
+- apps/web/src/components/ui/input.tsx
+- apps/web/src/components/ui/card.tsx
+- apps/web/src/components/ui/badge.tsx
+
+Removed:
+- apps/web/.gitignore
+
+
+============================================================
+7) DETAILED COMMAND REFERENCE
+============================================================
+
+Root-level commands:
+- pnpm install
+  Install all workspace dependencies.
+- pnpm dev
+  Run backend + frontend concurrently with streamed logs.
+- pnpm dev:api
+  Run backend only in watch mode.
+- pnpm dev:web
+  Run frontend only in Vite dev mode.
+- pnpm build
+  Build all workspace projects recursively.
+- pnpm lint
+  Lint all workspace projects recursively.
+
+Per-app commands:
+- Backend (apps/api):
+  - pnpm start
+  - pnpm start:dev
+  - pnpm build
+  - pnpm test
+  - pnpm test:e2e
+- Frontend (apps/web):
+  - pnpm dev
+  - pnpm build
+  - pnpm preview
+  - pnpm lint
+
+
+============================================================
+8) ENVIRONMENT / PORTS
+============================================================
+
+Backend:
+- Default URL: http://localhost:3000
+- Default response currently: "Hello World!"
+- Configurable via env:
+  - PORT (optional)
+
+Frontend:
+- Default URL: http://localhost:5173
+- If 5173 is occupied, Vite auto-selects next available port (example: 5174).
+
+Recommended local env files (optional):
+- apps/api/.env
+- apps/web/.env.local
+
+
+============================================================
+9) TROUBLESHOOTING MATRIX
+============================================================
+
+Issue: EADDRINUSE on backend startup
+- Symptom:
+  - Error listen EADDRINUSE :::3000
+- Cause:
+  - Another process already uses port 3000.
+- Fix:
+  - Stop process using 3000, or set PORT to another value.
+
+Issue: Cannot resolve @/lib/utils in web build
+- Symptom:
+  - TS2307 for @/* imports
+- Cause:
+  - Alias paths placed in wrong tsconfig scope.
+- Fix already applied:
+  - paths moved to apps/web/tsconfig.app.json
+
+Issue: TypeScript baseUrl deprecation warnings
+- Symptom:
+  - baseUrl deprecation diagnostics appear on unrelated options.
+- Cause:
+  - baseUrl present in tsconfig.
+- Fix already applied:
+  - baseUrl removed from workspace tsconfig files.
+
+Issue: react-refresh only-export-components lint errors with shadcn
+- Symptom:
+  - Errors for exported variant constants (buttonVariants, badgeVariants).
+- Cause:
+  - Rule is strict for Fast Refresh patterns.
+- Fix already applied:
+  - allowExportNames configured in apps/web/eslint.config.js
+
+
+============================================================
+10) CURRENT ARCHITECTURAL SNAPSHOT
+============================================================
+
+Backend (NestJS):
+- Basic app module/controller/service structure scaffolded.
+- E2E test configured via Jest (test/jest-e2e.json).
+- Build output goes to apps/api/dist.
+
+Frontend (React + Vite):
+- Vite + TypeScript + Tailwind v4 stack.
+- shadcn/ui initialized and integrated.
+- UI primitives currently available:
+  - button, input, card, badge
+- Build output goes to apps/web/dist.
+
+Shared package:
+- packages/types exposed as @task-flow/types.
+- Linked into both apps via workspace dependency.
+
+
+============================================================
+11) DEVELOPMENT OPTIMIZATIONS APPLIED
+============================================================
+
+- Root script orchestration fixed and made cross-platform friendly.
+- Recursive build/lint scripts added for monorepo consistency.
+- Duplicate .gitignore removed to avoid fragmented ignore behavior.
+- Root .editorconfig/.gitattributes added for consistent formatting and line endings.
+- TypeScript alias/deprecation pitfalls removed.
+- Lint rules tuned to support shadcn export pattern without suppressing rule globally.
+
+
+============================================================
+12) VALIDATION CHECKLIST (LATEST)
+============================================================
+
+- [x] Backend build succeeds.
+- [x] Frontend build succeeds.
+- [x] Workspace lint passes.
+- [x] Backend endpoint responds.
+- [x] Frontend endpoint responds.
+- [x] Root dev command starts both workflows (subject to free backend port).
+
+
+============================================================
+13) SUGGESTED NEXT STEPS
+============================================================
+
+1. Add API versioned routes and feature modules (auth/tasks/users).
+2. Add shared DTO and type contracts into packages/types.
+3. Add API client layer in web using shared types.
+4. Add root test script (unit + e2e + web tests once added).
+5. Add CI pipeline: install, lint, build, test.
+6. Add Docker/devcontainer setup if team onboarding is planned.
+7. Add healthcheck endpoint and simple readiness checks.
+
+
+============================================================
+14) QUICK ONBOARDING (NEW DEVELOPER)
+============================================================
+
+1. Clone repository.
+2. Run: pnpm install
+3. Run: pnpm dev
+4. Open frontend URL from Vite output (5173 or next free port).
+5. Verify backend: http://localhost:3000
+6. Run quality checks before commit:
+   - pnpm lint
+   - pnpm build
+
+
+END OF REPORT
