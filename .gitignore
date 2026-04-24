@@ -30,11 +30,7 @@ lerna-debug.log*
 Thumbs.db
 
 # IDE and editor files
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
+.vscode/
 .idea/
 *.suo
 *.ntvs*
